@@ -15,21 +15,21 @@ func doReduce(
 	reduceF func(key string, values []string) string,
 ) {
 
-	keyValues := make(map[string][]string, 0)
+	keyValues := make(map[string][]string, 0) //Create the array
 
 	for i := 0; i < nMap; i++ {
-		fileName := reduceName(jobName, i, reduceTask)
-		file, err := os.Open(fileName)
+		fileName := reduceName(jobName, i, reduceTask) //get the name
+		file, err := os.Open(fileName)                 //Open the file
 		if err != nil {
 			log.Fatal("doReduce: open intermediate file ", fileName, " error: ", err)
 		}
-		defer file.Close()
+		defer file.Close() //Close the file
 
-		dec := json.NewDecoder(file)
+		dec := json.NewDecoder(file) //Decoder the file
 
 		for {
 			var kv KeyValue
-			err := dec.Decode(&kv)
+			err := dec.Decode(&kv) //Get the keyvalue
 			if err != nil {
 				break
 			}
@@ -37,7 +37,7 @@ func doReduce(
 			if !ok {
 				keyValues[kv.Key] = make([]string, 0)
 			}
-			keyValues[kv.Key] = append(keyValues[kv.Key], kv.Value)
+			keyValues[kv.Key] = append(keyValues[kv.Key], kv.Value) //put the value into the keyvalue map
 		}
 	}
 
@@ -47,7 +47,7 @@ func doReduce(
 		keys = append(keys, k)
 	}
 
-	sort.Strings(keys)
+	sort.Strings(keys) //Sort the key
 
 	out_File, _ := os.Create(outFile)
 	defer out_File.Close()

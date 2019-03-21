@@ -15,23 +15,30 @@ func doMap(
 	nReduce int, // the number of reduce task that will be run ("R" in the paper)
 	mapF func(filename string, contents string) []KeyValue,
 ) {
+	//Read file from input File
 	inputFile, err := ioutil.ReadFile(inFile)
+
+	// Error handler
 	if err != nil {
 		log.Fatal("doMap: open file", inFile, "error", err)
 	}
+	//File info
 	fileInfo := string(inputFile)
 
+	//Return the key/value pair for reduce
 	intermediate_result := mapF(inFile, fileInfo)
 
+	//Open the file for each reduce worker
 	for i := 0; i < nReduce; i++ {
+		//Get the reducn file name
 		reduce_file_name := reduceName(jobName, mapTask, i)
-		reduce_file, _ := os.Create(reduce_file_name)
-		defer reduce_file.Close()
+		reduce_file, _ := os.Create(reduce_file_name) //Create the reduce file
+		defer reduce_file.Close()                     //Close the file after the function
 
-		enc := json.NewEncoder(reduce_file)
-		for _, kv := range intermediate_result {
-			if ihash(kv.Key)%nReduce == i {
-				err := enc.Encode(&kv)
+		enc := json.NewEncoder(reduce_file)      //Write the data with json into the reduce file
+		for _, kv := range intermediate_result { //For each key/value pair
+			if ihash(kv.Key)%nReduce == i { //Hash
+				err := enc.Encode(&kv) //Encode into the enc
 				if err != nil {
 					log.Fatal("doMap: encode error: ", err)
 				}
